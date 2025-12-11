@@ -34,6 +34,7 @@ class SummaryResponse(BaseModel):
 app = FastAPI()
 
 # LLM_SERVICE_URL = os.getenv("LLM_SERVICE_URL")
+TRANSCRIPT_SERVICE_URL = os.getenv("TRANSCRIPT_SERVICE_URL")
 
 # Endpoints
 @app.get("/health", response_model=ServiceHealth)
@@ -60,6 +61,8 @@ async def summarize_youtube(request: YoutubeRequest):
     video_id = extract_video_id(video_url)
     
     # TODO: check cache => transcript api => llm api for summary
+    
+
     return SummaryResponse(
         source_type="youtube",
         source_id=video_id,
@@ -70,12 +73,13 @@ async def summarize_youtube(request: YoutubeRequest):
 def extract_video_id(url: str) -> str:
     """
     Extracts video ID from:
-        https://www.youtube.com/watch?v=VIDEO_ID
-        https://youtu.be/VIDEO_ID
+        1. https://www.youtube.com/watch?v=VIDEO_ID
+        2. https://youtu.be/VIDEO_ID
+        3. https://www.youtube.com/shorts/VIDEO_ID
     """
     # regex for standard youtube pattern
-    regex_standard = r'(?:v=|\/)([0-9A-Za-z_-]{11}).*'
-    match = re.search(regex_standard, url)
+    regex = r'(?:v=|shorts\/|\/)([0-9A-Za-z_-]{11})'
+    match = re.search(regex, url)
     
     if match:
         return match.group(1)
