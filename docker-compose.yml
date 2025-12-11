@@ -11,46 +11,45 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    # depends_on:
+    depends_on:
+      db-service:
+        condition: service_healthy
     #   llm-service:
     #     condition: service_healthy
-      # db-service:
-        # condition: service_healthy
     # environment:
       # - LLM_SERVICE_BASE=http://llm-service:8001
-      # - DB_SERVICE_BASE=http://db-service:5432 
-  # db-service:
-  #   build: ./db-service
-  #   container_name: db-service
-  #   ports:
-  #     - "8001:8000"
-  #   environment:
-  #     - DATABASE_URL=postgresql://postgres:mysecretpassword@postgres-db:5432/cachedb
-  #   depends_on:
-  #     - postgres-db
-  #   restart: always
-  #   healthcheck: 
-  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 10s
+  db-service:
+    build: ./db-service
+    # container_name: db-service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg://summaryze:summaryze@postgres-db:5432/summaries
+    depends_on:
+      - postgres-db
+    restart: always
+    healthcheck: 
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   
-  # postgres-db:
-  #   image: postgres:16-alpine
-  #   environment:
-  #     POSTGRES_DB: summaries
-  #     POSTGRES_USER: summaryze
-  #     POSTGRES_PASSWORD: summaryze
-  #   volumes:
-  #       - postgres_data:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD", "pg_isready", "-U", "summaryze", "-d", "summaries"]
-  #     interval: 5s
-  #     timeout: 3s
-  #     retries: 10
-  #   ports:
-  #       - "5432:5432"
+  postgres-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: summaries
+      POSTGRES_USER: summaryze
+      POSTGRES_PASSWORD: summaryze
+    volumes:
+        - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "summaryze", "-d", "summaries"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+        - "5432:5432"
 
 
 networks:
