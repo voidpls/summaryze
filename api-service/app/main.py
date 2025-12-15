@@ -2,6 +2,8 @@ import os
 import re
 import httpx
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+
 from pydantic import BaseModel, HttpUrl, validator
 from typing import Optional, Dict
 
@@ -37,6 +39,10 @@ app = FastAPI()
 TRANSCRIPT_SERVICE_URL = os.getenv("TRANSCRIPT_SERVICE_URL")
 
 # Endpoints
+@app.get("/")
+async def read_index():
+    return FileResponse('static/index.html')
+
 @app.get("/health", response_model=ServiceHealth)
 async def get_health():
     return ServiceHealth(service="api-service", status="healthy")
