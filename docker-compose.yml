@@ -7,8 +7,8 @@ services:
       - "8000:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 5
       start_period: 10s
     depends_on:
@@ -36,10 +36,10 @@ services:
     restart: always
     healthcheck: 
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 5
-      start_period: 10s
+      start_period: 5s
   
   transcript-service:
     build: ./transcript-service
@@ -48,10 +48,10 @@ services:
     restart: always
     healthcheck: 
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 5
-      start_period: 10s
+      start_period: 5s
 
   llm-service:
     build: ./llm-service
@@ -60,10 +60,10 @@ services:
     restart: always
     healthcheck: 
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 5
-      start_period: 10s
+      start_period: 5s
 
   postgres-db:
     image: postgres:16-alpine
@@ -75,8 +75,8 @@ services:
         - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "summaryze", "-d", "summaries"]
-      interval: 5s
-      timeout: 3s
+      interval: 3s
+      timeout: 2s
       retries: 10
     ports:
         - "5432:5432"
