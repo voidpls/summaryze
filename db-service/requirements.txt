@@ -1,6 +1,6 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-pydantic==2.5.0
+fastapi==0.124.0
+uvicorn==0.38.0
+pydantic==2.12.5
 sqlmodel>=0.0.16
 sqlalchemy>=2.0
 psycopg[binary]>=3.0
