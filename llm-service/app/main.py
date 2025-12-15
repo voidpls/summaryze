@@ -31,8 +31,8 @@ async def get_health():
     return ServiceHealth(service="llm-service", status="healthy")
 
 
-@app.post("/summarizeText", response_model=SummarizeResponse)
-async def summarize_text(request: SummarizeRequest):
+@app.post("/getSummary", response_model=SummarizeResponse)
+async def get_summary(request: SummarizeRequest):
     prompt = getSummarizePrompt(request.text, request.type)
     generated = generate(prompt)
     return SummarizeResponse(summary=generated['markdown_content'])
@@ -49,8 +49,8 @@ def getSummarizePrompt(text, type: Literal['video', 'text']):
             '# Core Instructions\n1.  **Analyze**: Read the entire transcript to understand the speaker\'s core argument, tone, and structure.\n2.  **Filter**: Ignore all "housekeeping" chatter (e.g., "Please like and subscribe," "Check out my merch," "Let\'s get into the video").\n3.  **Detect & Skip Sponsors**: Identify and completely ignore any distinct sponsor reads or ad segments. Focus only on the content.\n4.  **Structure**: Output the summary using the format defined below.\n\n# Output Format\nPlease present your response in the following Markdown structure:\n\n'
             '## [Video Title / Main Topic]\n\n**One-Sentence Hook:**\nA single sentence capturing the essence or "big idea" of the video.\n\n**TL;DR Summary:**\nA 3-5 sentence paragraph summarizing the narrative arc and conclusion.\n\n'
             '**Key Insights & Takeaways:**\n* **[Insight 1]:** Explanation (Bold the key concept).\n* **[Insight 2]:** Explanation.\n* (List 3-7 distinct points depending on video length).\n\n'
-            '**Detailed Breakdown (Optional for Long Videos):**\n* **1. Section Topic:** Brief detail.\n* **2. Section Topic:** Brief detail.\n\n'
-            '**Quotes of Note:**\n> "Insert the most impactful or defining quote from the speaker here."\n\n---\n\n'
+            '**Detailed Breakdown (For Long Videos):**\n* **1. Section Topic:** Brief detail.\n* **2. Section Topic:** Brief detail.\n\n'
+            '**Quotes of Note:**\n> "Insert the most impactful or defining quote from the speaker here. Add formatting and punctuation if needed."\n\n---\n\n'
             '# Tone Guidelines\n* **Objective:** Remain neutral and factual.\n* **Direct:** Use active voice. Avoid "The speaker says..." repeatedly; instead, state the points directly.\n* **Clear:** Translate jargon into plain English where possible, or define it briefly.\n\n'
             '# Constraints\n* If the transcript is too short or lacks content, state: "Insufficient content to summarize."\n* Do not hallucinate information not present in the transcript.\n* If the video is a tutorial, prioritize the *steps* involved over the theory.\n\n----------------\n\n'
             'YouTube transcript:\n\n' + text
