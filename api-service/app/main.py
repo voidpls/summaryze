@@ -61,13 +61,27 @@ async def summarize_youtube(request: YoutubeRequest):
     video_id = extract_video_id(video_url)
     
     # TODO: check cache => transcript api => llm api for summary
-    
+    transcript = await fetch_transcript(video_id)
 
     return SummaryResponse(
         source_type="youtube",
         source_id=video_id,
-        summary=f"[summary placeholder]"
+        summary=f"[summary placeholder] {transcript}"
     )
+
+async def fetch_transcript(youtube_id):
+    try: 
+        async with httpx.AsyncClient() as client:
+            data = {'youtube_id': youtube_id}
+            transcript_endpoint = f'{TRANSCRIPT_SERVICE_URL}/fetchTranscript'
+            res = await client.post(transcript_endpoint, json=data)
+            transcript_data = res.json()
+            transcript = transcript_data['transcript']
+
+            return transcript
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Failed to fetch transcript for YouTube video")
 
 
 def extract_video_id(url: str) -> str:
