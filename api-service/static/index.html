@@ -122,6 +122,18 @@
             min-height: 400px;
         }
 
+        #video-container {
+            margin-top: 15px;
+            display: none;
+        }
+
+        #video-container iframe {
+            width: 100%;
+            height: 315px;
+            border-radius: 8px;
+            border: none;
+        }
+
         #output-area {
             min-height: 400px;
             background: transparent;
@@ -225,11 +237,23 @@
             transform: none;
         }
 
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .loading {
             display: none;
-            text-align: center;
-            color: #7f8c8d;
-            margin-top: 15px;
         }
 
         .error {
@@ -273,7 +297,6 @@
 
         <div class="button-container">
             <button id="summarize-btn" onclick="summarize()">Summarize</button>
-            <div class="loading" id="loading">Processing...</div>
             <div class="error" id="error"></div>
         </div>
 
@@ -284,6 +307,7 @@
                     id="input-area" 
                     class="large"
                     placeholder="Paste your text here..."></textarea>
+                <div id="video-container"></div>
             </div>
 
             <div class="panel">
@@ -299,8 +323,8 @@
         const inputLabel = document.getElementById('input-label');
         const outputArea = document.getElementById('output-area');
         const summarizeBtn = document.getElementById('summarize-btn');
-        const loading = document.getElementById('loading');
         const errorDiv = document.getElementById('error');
+        const videoContainer = document.getElementById('video-container');
 
         inputTypeRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
@@ -312,12 +336,19 @@
                     inputLabel.textContent = 'Enter Text';
                     inputArea.placeholder = 'Paste your text here...';
                     inputArea.classList.add('large');
+                    videoContainer.style.display = 'none';
                 }
                 inputArea.value = '';
                 outputArea.innerHTML = '';
                 errorDiv.style.display = 'none';
             });
         });
+
+        function getYoutubeVideoId(url) {
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
 
         async function summarize() {
             const inputType = document.querySelector('input[name="inputType"]:checked').value;
@@ -329,9 +360,20 @@
             }
 
             errorDiv.style.display = 'none';
-            loading.style.display = 'block';
+            summarizeBtn.innerHTML = '<span class="spinner"></span>';
             summarizeBtn.disabled = true;
             outputArea.innerHTML = '';
+
+            // Embed YouTube video if processing a YouTube URL
+            if (inputType === 'youtube') {
+                const videoId = getYoutubeVideoId(inputValue);
+                if (videoId) {
+                    videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+                    videoContainer.style.display = 'block';
+                }
+            } else {
+                videoContainer.style.display = 'none';
+            }
 
             try {
                 const endpoint = inputType === 'text' ? '/summarize/text' : '/summarize/youtube';
@@ -358,7 +400,7 @@
             } catch (error) {
                 showError(error.message);
             } finally {
-                loading.style.display = 'none';
+                summarizeBtn.innerHTML = 'Summarize';
                 summarizeBtn.disabled = false;
             }
         }
