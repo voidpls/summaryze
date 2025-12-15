@@ -16,11 +16,12 @@ services:
         condition: service_healthy
       transcript-service:
         condition: service_healthy
+      llm-service:
+        condition: service_healthy
     environment: 
-      DB_SERVICE_URL: http://db-manager:8001
-      TRANSCRIPT_SERVICE_URL: http://transcript-service:8002
-    #   llm-service:
-    #     condition: service_healthy
+      DB_SERVICE_URL: http://db-service:8000
+      TRANSCRIPT_SERVICE_URL: http://transcript-service:8000
+ 
     # environment:
       # - LLM_SERVICE_BASE=http://llm-service:8001
   db-service:
@@ -44,6 +45,18 @@ services:
     build: ./transcript-service
     ports: 
       - "8002:8000"
+    restart: always
+    healthcheck: 
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  llm-service:
+    build: ./llm-service
+    ports: 
+      - "8003:8000"
     restart: always
     healthcheck: 
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
