@@ -79,8 +79,6 @@ async def summarize_youtube(request: YoutubeRequest):
     youtube_url = str(request.url)
     youtube_id = extract_video_id(youtube_url) # ex: dM2CN-GR4rU
     
-    # TODO: check cache => transcript api => llm api for summary
-
     cached = await cache_get(youtube_id)
     if cached is not None:
         return SummaryResponse(
