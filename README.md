@@ -8,7 +8,9 @@ Requirements:
 - docker
 - docker-compose
 
-**Fill out llm-service/app/.env based on .env.example**
+**For LLM API to work, fill out llm-service/app/.env**
+
+**(Optional) For transcript fetching proxy support, fill out transcript-service/app/.env**
 
 Single instance 
 ```bash

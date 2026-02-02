@@ -4,7 +4,9 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
-
+from youtube_transcript_api.proxies import WebshareProxyConfig
+from dotenv import load_dotenv
+load_dotenv()
 
 # models
 class ServiceHealth(BaseModel):
@@ -18,7 +20,23 @@ class TranscriptResponse(BaseModel):
 
 app = FastAPI()
 ytt_formatter = TextFormatter()
-ytt_api = YouTubeTranscriptApi()
+
+# Configure proxy
+use_proxy = os.getenv("USE_PROXY", "false").lower() == "true"
+proxy_user = os.getenv("PROXY_USER")
+proxy_pass = os.getenv("PROXY_PASS")
+
+if use_proxy:
+    print("Proxy enabled")
+    proxy_config = WebshareProxyConfig(
+        proxy_username=proxy_user,
+        proxy_password=proxy_pass,
+        filter_ip_locations=["us"]
+    )
+    ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config)
+else:
+    print("Proxy disabled")
+    ytt_api = YouTubeTranscriptApi()
 
 # Endpoints
 @app.get("/health", response_model=ServiceHealth)
