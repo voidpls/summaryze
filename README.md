@@ -1,10 +1,14 @@
 # Summaryze
-Text and YouTube Video Summarizer
+**Text and YouTube Video Summarizer**
+
+Resilient, scalable, and easy to deploy via Docker Compose
 
 ## Running
 Requirements: 
 - docker
 - docker-compose
+
+**Fill out llm-service/app/.env based on .env.example**
 
 Single instance 
 ```bash
@@ -41,3 +45,6 @@ GET http://localhost:8003/health
 # Postgres
 docker exec -it summaryze-postgres-db-1 pg_isready -U summaryze -d summaries
 ```
+
+### System Architecture
+<img width="960" height="720" alt="CS 426 Summaryze Final Project Architecture" src="https://github.com/user-attachments/assets/fc09fbc4-4171-485f-b05a-b2d811818f61" />
