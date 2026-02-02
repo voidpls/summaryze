@@ -8,6 +8,8 @@ Requirements:
 - docker
 - docker-compose
 
+**Fill out llm-service/app/.env based on .env.example**
+
 Single instance 
 ```bash
 docker compose up -d --build
