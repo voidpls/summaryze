@@ -4,7 +4,7 @@ import hashlib
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
-from bs4 import BeautifulSoup
+
 
 from pydantic import BaseModel, HttpUrl, validator
 
@@ -88,7 +88,9 @@ async def summarize_youtube(request: YoutubeRequest):
         )
     
     transcript = await fetch_transcript(youtube_id)
-    title = await fetch_title(youtube_url)
+    # Use canonical watch URL for oEmbed consistency
+    canonical_url = f"https://www.youtube.com/watch?v={youtube_id}"
+    title = await fetch_title(canonical_url)
     
     transcript_with_title = f'(Video Title: {title})\n\n {transcript}'
 
@@ -130,15 +132,20 @@ async def fetch_transcript(youtube_id):
         print(e)
         raise HTTPException(status_code=500, detail="Failed to fetch transcript for YouTube video")
 
-async def fetch_title(url):
+async def fetch_title(url: str) -> str:
+    """Fetch video title via YouTube oEmbed API. Returns empty string on unavailable/private videos."""
     try:
-        async with httpx.AsyncClient() as client:
-            res = await client.get(url, follow_redirects=True)
-            soup = BeautifulSoup(res.content, 'html.parser')
-            title_tag = soup.find('meta', property='og:title')
-            if title_tag and 'content' in title_tag.attrs:
-                return title_tag['content']
-            else: return ''
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.get(
+                "https://www.youtube.com/oembed",
+                params={"url": url, "format": "json"},
+                follow_redirects=True,
+            )
+            # private, deleted, non-embeddable, or invalid video IDs
+            if res.status_code in (400, 401, 404):
+                return ""
+            res.raise_for_status()
+            return (res.json().get("title") or "").strip()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Failed to fetch YouTube video metadata")
