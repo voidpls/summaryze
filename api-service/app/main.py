@@ -5,7 +5,6 @@ import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
-
 from pydantic import BaseModel, HttpUrl, validator
 
 # models
@@ -88,10 +87,9 @@ async def summarize_youtube(request: YoutubeRequest):
         )
     
     transcript = await fetch_transcript(youtube_id)
-    # Use canonical watch URL for oEmbed consistency
     canonical_url = f"https://www.youtube.com/watch?v={youtube_id}"
     title = await fetch_title(canonical_url)
-    
+
     transcript_with_title = f'(Video Title: {title})\n\n {transcript}'
 
     summary = await fetch_summary(text=transcript_with_title, type='video')
@@ -119,21 +117,25 @@ async def fetch_summary(text, type):
 
 async def fetch_transcript(youtube_id):
     try: 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             data = {'youtube_id': youtube_id}
             transcript_endpoint = f'{TRANSCRIPT_SERVICE_URL}/fetchTranscript'
             res = await client.post(transcript_endpoint, json=data)
+            if res.status_code == 404:
+                detail = res.json().get('detail', 'Transcript not found')
+                raise HTTPException(status_code=404, detail=detail)
             res.raise_for_status()
             transcript_data = res.json()
             transcript = transcript_data['transcript']
             
             return transcript
+    except HTTPException:
+        raise
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Failed to fetch transcript for YouTube video")
 
 async def fetch_title(url: str) -> str:
-    """Fetch video title via YouTube oEmbed API. Returns empty string on unavailable/private videos."""
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             res = await client.get(
@@ -141,7 +143,6 @@ async def fetch_title(url: str) -> str:
                 params={"url": url, "format": "json"},
                 follow_redirects=True,
             )
-            # private, deleted, non-embeddable, or invalid video IDs
             if res.status_code in (400, 401, 404):
                 return ""
             res.raise_for_status()
