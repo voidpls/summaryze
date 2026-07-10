@@ -96,8 +96,7 @@
 
         textarea {
             width: 100%;
-            flex: 1;
-            min-height: 140px;
+            min-height: 56px;
             padding: 12px;
             border: 1px solid #2a2a2a;
             border-radius: 8px;
@@ -108,7 +107,10 @@
             line-height: 1.55;
             resize: vertical;
         }
-        textarea.large { min-height: 240px; }
+        textarea.large {
+            flex: 1;
+            min-height: 240px;
+        }
         textarea::placeholder { color: #555; }
         textarea:focus {
             outline: none;
